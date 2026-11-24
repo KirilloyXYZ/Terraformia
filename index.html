@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#151a1d">
+  <meta name="description" content="Terraformia — марсианская экспедиция. Построй два поселения и проведи их через большую пыльную бурю.">
+  <title>Terraformia · Марсианская экспедиция</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="identity"><span class="mission-mark" aria-hidden="true"></span><span>TERRAFORMIA<small>МАРСИАНСКАЯ ЭКСПЕДИЦИЯ</small></span></div>
+    <div class="top-center" aria-label="Игровые часы">
+      <span class="time-signal" id="day-mark"></span>
+      <span class="sol" id="sol">Сол 01</span>
+      <b id="clock">00:00</b>
+      <span class="time-divider"></span>
+      <span id="weather">День</span>
+      <span class="outside" id="outside">−36 °C</span>
+    </div>
+    <div class="top-actions">
+      <button class="btn btn-quiet sound-button" data-action="sound" aria-label="Звук игры" aria-pressed="true" title="Включить или выключить звук"><span class="speaker" aria-hidden="true"></span><span class="sound-label">Звук</span></button>
+      <button class="btn btn-quiet" id="time-rate" data-action="speed" title="Ускорить ожидание">×1</button>
+      <button class="btn btn-quiet pause-button" id="pause-button" data-action="pause" title="Пауза (Esc)"><span aria-hidden="true">Ⅱ</span> Пауза</button>
+    </div>
+  </header>
+
+  <main class="layout" id="layout" aria-label="Игровое поле Terraformia" inert>
+    <section class="world" id="world" aria-label="Карта Марса">
+      <canvas id="map" tabindex="0" aria-label="Карта. Управляй ровером клавишами WASD или стрелками, выбирай объекты мышью."></canvas>
+      <div class="map-top">
+        <div class="position-label"><i></i><span id="position">ПОСАДОЧНАЯ ДОЛИНА</span></div>
+        <div class="map-tools">
+          <button class="btn btn-glass" id="center-rover" data-action="rover" title="Вернуть камеру к марсоходу">⊙ <span>TERRA‑01</span></button>
+          <button class="btn btn-glass zoom" data-action="zoom-out" aria-label="Отдалить карту">−</button>
+          <button class="btn btn-glass zoom" data-action="zoom-in" aria-label="Приблизить карту">+</button>
+        </div>
+      </div>
+      <section class="mission-guide" id="mission-guide" aria-label="Текущая цель">
+        <div class="guide-heading"><span id="guide-heading-label">Текущая цель</span><span id="guide-progress"></span></div>
+        <div class="guide-chapter-track" aria-hidden="true"><i id="guide-chapter-fill"></i></div>
+        <h3 id="guide-title"></h3>
+        <p id="guide-detail"></p>
+        <div class="guide-materials" id="guide-materials" hidden></div>
+        <div class="guide-actions">
+          <button class="guide-focus" id="guide-focus" data-action="guide-focus" title="Показать цель на карте" hidden>
+            <span class="locator-icon" aria-hidden="true"></span><span id="guide-distance"></span>
+          </button>
+          <button class="btn guide-action" id="guide-action" data-action="guide-step" hidden></button>
+        </div>
+        <button class="guide-reset" id="guide-reset" data-action="clear-plan" hidden>← К задаче главы</button>
+      </section>
+      <div class="warning" id="warning" hidden></div>
+      <div class="nearby-card" id="interact-card" hidden>
+        <button id="interact-button" data-action="nearby" class="interact-button">
+          <kbd>E</kbd><span id="interact-label"></span>
+        </button>
+        <p id="interact-detail"></p>
+      </div>
+      <div class="achievement" id="achievement" role="status" aria-live="polite" hidden>
+        <span class="achievement-icon" aria-hidden="true">✓</span>
+        <div><small>Достижение</small><b id="achievement-label"></b></div>
+      </div>
+      <div class="build-hint" id="build-hint" hidden></div>
+      <div class="map-bottom">
+        <div class="mini"><div class="mini-head"><span>КАРТА РАЙОНА</span><span>↑ С</span></div><canvas id="minimap" width="190" height="119" aria-label="Обзорная карта"></canvas><div class="mini-legend"><i id="mini-goal-key"></i> цель <span></span> ровер</div></div>
+        <div class="quick-area">
+          <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+          <div class="quick" id="quick" aria-label="Быстрое строительство"></div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="panel" aria-label="Управление экспедицией">
+      <div class="panel-top">
+        <div class="chapter-meta"><span id="chapter-no">ГЛАВА 01 / 04</span><span class="chapter-bars" id="chapter-bars" aria-hidden="true"></span></div>
+        <h2 id="chapter-title">Первый купол</h2>
+        <div class="base-select" id="base-select" aria-label="Поселения"></div>
+      </div>
+      <section class="stock-strip" aria-label="Запасы выбранного поселения">
+        <div class="stock-strip-heading"><span>Склад поселения</span><span id="stock-plan-label" hidden></span></div>
+        <div id="stock-strip"></div>
+        <div id="stock-production" class="stock-production" aria-label="Производство" hidden></div>
+      </section>
+      <nav class="tabs" aria-label="Разделы управления">
+        <button data-tab="status" aria-pressed="true">Обзор</button>
+        <button data-tab="build" aria-pressed="false">Постройки</button>
+        <button data-tab="drones" aria-pressed="false">Дроны</button>
+        <button data-tab="log" aria-pressed="false">Журнал</button>
+      </nav>
+      <div class="panel-body" id="panel-body"></div>
+    </aside>
+  </main>
+
+  <footer class="bottom">
+    <div class="rover-readout"><i></i><b>TERRA‑01</b><span id="cargo">Груз 0 / 8</span></div>
+    <div class="key-hints"><span><kbd>WASD</kbd> Движение</span><span><kbd>Shift</kbd> Точный ход</span><span><kbd>E</kbd> <span id="nearby-action">Действие рядом</span></span></div>
+    <button class="text-btn" data-action="help">Управление</button>
+  </footer>
+
+  <div id="overlay" class="overlay" role="dialog" aria-modal="true" aria-labelledby="dialog-title"></div>
+
+  <script src="engine.js"></script>
+  <script src="guidance.js"></script>
+  <script src="render.js"></script>
+  <script src="sound.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
